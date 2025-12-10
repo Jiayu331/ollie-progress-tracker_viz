@@ -1,0 +1,104 @@
+---
+title: "Ollie progress tracker"
+author: "Jiayu"
+date: "2025-12-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+library(tidyverse)
+library(janitor)
+library(tidylog)
+library(lubridate)
+library(ggthemes)
+library(readr)
+library(ggsci)
+library(showtext)
+library(sysfonts)
+```
+
+```{r}
+data <- read_csv("./progress tracker.csv", skip=3) |>
+  select(2:6) |>
+  slice(1:13) |>
+  clean_names()
+data
+```
+```{r}
+data$date <- as.Date(data$date, format = "%m/%d/%y")
+data$date <- format(data$date, "%m/%d")
+```
+```{r}
+data$success_rate <- as.numeric(sub("%","",data$success_rate))
+```
+```{r}
+font_add(
+  family = "IndustriaSolid",
+  regular="/Users/jiayu/Library/Fonts/Industria Solid.otf")
+font_add(
+  family="UrbanSkate",
+  regular="/Users/jiayu/Library/Fonts/UrbanSkate.otf")
+showtext_auto()
+```
+
+```{r}
+p1 <- ggplot(data=data) +
+  geom_line(aes(x=date, y=success_rate, col=obstacle, group=obstacle),linewidth = 1.2) +
+  geom_point(aes(x=date, y=success_rate, col=obstacle), size=2) +
+  scale_y_continuous(
+    breaks = seq(0,100, by=20),
+    labels = function(x) paste0(x,"%")
+  ) +
+  labs(
+    title="Ollie Progress Tracker",
+    x="Date", 
+    y="Success Rate", 
+    color = "Obstacle Size") +
+  theme_fivethirtyeight() +
+  scale_color_manual(
+    values=c("#E71D36", "#97CE4C","#59CBE8")) +
+  guides(color=guide_legend(reverse=TRUE)) +
+  theme(
+    plot.title=element_text(family="UrbanSkate",size=32, margin=margin(10,0,20,0)),
+    axis.title.x=element_text(family="IndustriaSolid", size=24, margin=margin(5,0,5,0)),
+    axis.title.y=element_text(family="IndustriaSolid", size=24, margin=margin(0,5,0,5)),
+    legend.title=element_text(family="IndustriaSolid", size=24, margin=margin(5,0,5,0)),
+    axis.text=element_text(family="IndustriaSolid", size=16))
+
+print(p1)
+```
+```{r}
+ggsave("ollie tracker.pdf", height=6, width=10)
+```
+
+
+
+
+
+
+
+
+
